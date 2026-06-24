@@ -1,12 +1,1 @@
-{
-  "name": "vue-ui-agent",
-  "version": "1.0.0",
-  "description": "",
-  "main": "index.js",
-  "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
-  },
-  "keywords": [],
-  "author": "",
-  "license": "ISC"
-}
+{"name": "vue-ui-agent", "version": "1.0.0", "description": "MCP tool for generating Vue 3 components from UI screenshots using Gemini AI", "type": "module", "main": "src/index.js", "bin": {"vue-ui-agent": "./src/index.js"}, "scripts": {"start": "node src/index.js", "mcp": "node src/index.js"}, "keywords": ["mcp", "vue", "ui-agent", "gemini", "component-generator"], "author": "", "license": "ISC", "dependencies": {"@google/genai": "^1.0.0", "@modelcontextprotocol/sdk": "^1.0.0"}}
