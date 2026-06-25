@@ -253,16 +253,35 @@ export default Button;
 <!-- FILE_START: Badge.vue -->
 ...以此类推...
 <!-- FILE_END: Badge.vue -->
+
+<!-- FILE_START: README.md -->
+<完整的组件库使用文档，必须包含以下章节：组件清单表格、Props 说明、Slots 说明、交互规则、UI 规范、栅格系统、间距系统、排版系统、颜色使用规范、动画规范、无障碍规范>
+<!-- FILE_END: README.md -->
 \`\`\`
 
 **格式规则**：
 1. **第一个文件必须是 theme.css**，包含所有从截图提取的 Design Token（颜色、圆角、阴影、间距、字体）
-2. 每个组件用 \`<!-- FILE_START: 文件名 -->\` 和 \`<!-- FILE_END: 文件名 -->\` 包裹
-3. 文件名使用 PascalCase：\`Button.vue\`, \`Input.vue\`, \`Card.vue\` 等（React 用 \`.tsx\` 后缀）
-4. 组件之间不要有其他文字解释
-5. 至少生成 **6 个以上** 组件（Button + Input + Card + Badge + Avatar + Divider 为基础必选）
-6. 根据截图内容**智能延伸**相关组件（看到表单就加 Select/Switch/Checkbox，看到数据列表就加 Table/Pagination）
-7. 组件代码中**必须引用 theme.css 中定义的 CSS 变量**，不要硬编码颜色值
+2. **最后一个文件必须是 README.md**，包含完整的组件库使用文档
+3. 每个组件用 \`<!-- FILE_START: 文件名 -->\` 和 \`<!-- FILE_END: 文件名 -->\` 包裹
+4. 文件名使用 PascalCase：\`Button.vue\`, \`Input.vue\`, \`Card.vue\` 等（React 用 \`.tsx\` 后缀）
+5. 组件之间不要有其他文字解释
+6. 至少生成 **6 个以上** 组件（Button + Input + Card + Badge + Avatar + Divider 为基础必选）
+7. 根据截图内容**智能延伸**相关组件（看到表单就加 Select/Switch/Checkbox，看到数据列表就加 Table/Pagination）
+8. 组件代码中**必须引用 theme.css 中定义的 CSS 变量**，不要硬编码颜色值
+
+**README.md 必须包含的章节**：
+1. **组件清单**：表格列出所有生成的组件、文件路径、用途描述
+2. **快速开始**：如何在项目中使用（import 示例、注册方式）
+3. **Props 说明**：每个组件的 Props 类型、默认值、必填项
+4. **Slots 说明**：每个组件的具名插槽
+5. **交互规则**：hover/active/focus/disabled 状态的行为
+6. **UI 规范**：圆角/阴影/边框的具体使用场景
+7. **栅格系统**：列数、间距、断点（如 12 栏 / 24px gutter / 响应式断点）
+8. **间距系统**：space 阶梯表（xs/sm/md/lg/xl 的具体使用）
+9. **排版系统**：font-size / line-height / font-weight 阶梯
+10. **颜色规范**：主色/辅助色/语义色的使用场景
+11. **动画规范**：过渡时长、缓动函数
+12. **无障碍规范**：键盘导航、ARIA 属性、对比度
 
 ## 设计原则
 

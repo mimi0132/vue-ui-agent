@@ -79,7 +79,7 @@ function generateIndexFile(componentFiles, framework) {
  */
 function generateThemeCSS(componentFiles) {
   const tokens = new Set();
-  
+
   componentFiles.forEach(f => {
     const cssVarMatches = f.content.match(/--ui-\w+:\s*[^;]+;/g);
     if (cssVarMatches) {
@@ -120,6 +120,271 @@ function generateThemeCSS(componentFiles) {
   }
 
   return `:root {\n${Array.from(tokens).join('\n')}\n}\n`;
+}
+
+/**
+ * 生成组件库说明文档（README.md）
+ */
+function generateDocsFile(componentFiles, framework) {
+  const isVue = framework === 'vue';
+  const frameworkLabel = isVue ? 'Vue 3' : 'React';
+
+  const componentList = componentFiles
+    .filter(f => f.fileName.endsWith(isVue ? '.vue' : '.tsx'))
+    .map(f => {
+      const name = f.fileName.replace(isVue ? '.vue' : '.tsx', '');
+      return `| \`${f.fileName}\` | ${name} | ${name} 组件 |`;
+    })
+    .join('\n');
+
+  return `# UI Agent 组件库
+
+> 由 Vue UI Agent 自动生成 - 基于 ${frameworkLabel} 的完整组件库
+
+## 目录
+
+1. [组件清单](#组件清单)
+2. [快速开始](#快速开始)
+3. [设计 Token](#设计-token)
+4. [栅格系统](#栅格系统)
+5. [间距系统](#间距系统)
+6. [排版系统](#排版系统)
+7. [颜色规范](#颜色规范)
+8. [圆角规范](#圆角规范)
+9. [阴影规范](#阴影规范)
+10. [动画规范](#动画规范)
+11. [交互规则](#交互规则)
+12. [无障碍规范](#无障碍规范)
+
+---
+
+## 组件清单
+
+| 文件 | 组件名 | 用途 |
+|------|--------|------|
+${componentList}
+
+---
+
+## 快速开始
+
+### 安装
+
+\`\`\`bash
+# 1. 复制组件文件到你的项目 src/components/ui/ 目录
+# 2. 引入 theme.css 到入口文件
+\`\`\`
+
+### 引入样式
+
+\`\`\`${isVue ? 'javascript' : 'javascript'}
+// main.ts / main.js / main.tsx
+import './components/ui/theme.css'
+\`\`\`
+
+### 使用组件
+
+${
+  isVue
+    ? `\`\`\`vue
+<script setup lang="ts">
+import { Button, Input, Card } from '@/components/ui'
+
+const handleClick = () => {
+  console.log('clicked')
+}
+</script>
+
+<template>
+  <Card title="示例">
+    <Input placeholder="请输入内容" />
+    <Button variant="primary" @click="handleClick">提交</Button>
+  </Card>
+</template>
+\`\`\`
+`
+    : `\`\`\`tsx
+import { Button, Input, Card } from '@/components/ui'
+
+export default function Example() {
+  return (
+    <Card title="示例">
+      <Input placeholder="请输入内容" />
+      <Button variant="primary" onClick={() => console.log('clicked')}>提交</Button>
+    </Card>
+  )
+}
+\`\`\`
+`
+}
+
+---
+
+## 设计 Token
+
+所有视觉变量都定义在 \`theme.css\` 中，使用 CSS Variables 暴露，方便在业务中复用和二次定制。
+
+\`\`\`css
+/* 颜色 */
+--ui-color-primary      /* 主色 */
+--ui-color-primary-hover
+--ui-color-secondary
+--ui-color-success / warning / danger / info
+
+/* 圆角 */
+--ui-radius-sm / md / lg / xl / full
+
+/* 阴影 */
+--ui-shadow-xs / sm / md / lg / xl
+
+/* 间距 */
+--ui-space-xs / sm / md / lg / xl
+
+/* 字体 */
+--ui-font-size-xs / sm / md / lg / xl
+
+/* 过渡 */
+--ui-transition-fast / normal / slow
+\`\`\`
+
+---
+
+## 栅格系统
+
+| 断点 | 宽度 | 列数 | Gutter |
+|------|------|------|--------|
+| \`xs\` | < 640px | 4 | 16px |
+| \`sm\` | ≥ 640px | 8 | 16px |
+| \`md\` | ≥ 768px | 12 | 24px |
+| \`lg\` | ≥ 1024px | 12 | 24px |
+| \`xl\` | ≥ 1280px | 12 | 32px |
+| \`2xl\` | ≥ 1536px | 12 | 32px |
+
+**规则**：
+- 内容容器最大宽度 1440px
+- 卡片间距统一使用 \`--ui-space-lg\`
+- 表单字段垂直间距使用 \`--ui-space-md\`
+
+---
+
+## 间距系统
+
+基于 4px 基准的阶梯：
+
+| Token | 值 | 用途 |
+|-------|----|----|
+| \`--ui-space-xs\` | 4px | 文字与图标间距、紧凑元素 |
+| \`--ui-space-sm\` | 8px | 按钮内边距、标签间距 |
+| \`--ui-space-md\` | 16px | 卡片内边距、表单字段间距 |
+| \`--ui-space-lg\` | 24px | 区块间距、卡片之间 |
+| \`--ui-space-xl\` | 32px | 大区块分隔、页面边距 |
+
+---
+
+## 排版系统
+
+| Token | 字号 | 行高 | 字重 | 用途 |
+|-------|------|------|------|------|
+| \`--ui-font-size-xs\` | 12px | 16px | 400 | 辅助说明 |
+| \`--ui-font-size-sm\` | 14px | 20px | 400 | 次要文字 |
+| \`--ui-font-size-md\` | 16px | 24px | 400 | 正文 |
+| \`--ui-font-size-lg\` | 18px | 28px | 500 | 小标题 |
+| \`--ui-font-size-xl\` | 24px | 32px | 600 | 标题 |
+
+---
+
+## 颜色规范
+
+| 场景 | Token |
+|------|-------|
+| 品牌主操作（按钮、链接） | \`--ui-color-primary\` |
+| 危险操作（删除、错误） | \`--ui-color-danger\` |
+| 成功提示 | \`--ui-color-success\` |
+| 警告提示 | \`--ui-color-warning\` |
+| 信息提示 | \`--ui-color-info\` |
+| 页面背景 | \`--ui-color-bg\` |
+| 卡片表面 | \`--ui-color-surface\` |
+| 分割线/边框 | \`--ui-color-border\` |
+| 主要文字 | \`--ui-color-text-primary\` |
+| 次要文字 | \`--ui-color-text-secondary\` |
+
+---
+
+## 圆角规范
+
+| 组件类型 | 推荐值 |
+|----------|--------|
+| 按钮 | \`--ui-radius-md\` |
+| 输入框 | \`--ui-radius-md\` |
+| 卡片 | \`--ui-radius-lg\` |
+| 徽章/标签 | \`--ui-radius-full\` |
+| 头像 | \`--ui-radius-full\` |
+| 模态框 | \`--ui-radius-xl\` |
+
+---
+
+## 阴影规范
+
+| 场景 | Token |
+|------|-------|
+| 静态卡片 | \`--ui-shadow-sm\` |
+| 悬浮卡片 | \`--ui-shadow-md\` |
+| 下拉菜单 | \`--ui-shadow-lg\` |
+| 模态框 | \`--ui-shadow-xl\` |
+| 按钮 hover | \`--ui-shadow-sm\` |
+
+---
+
+## 动画规范
+
+| Token | 时长 | 用途 |
+|-------|------|------|
+| \`--ui-transition-fast\` | 150ms | 颜色、透明度变化 |
+| \`--ui-transition-normal\` | 200ms | 通用过渡 |
+| \`--ui-transition-slow\` | 300ms | 模态框、抽屉 |
+
+缓动函数：\`ease\` / \`cubic-bezier(0.4, 0, 0.2, 1)\`
+
+---
+
+## 交互规则
+
+### Hover 态
+- 颜色：主色 → \`primary-hover\`
+- 阴影：\`shadow-sm\` → \`shadow-md\`
+- 过渡：\`--ui-transition-fast\`
+
+### Active 态
+- 颜色：\`primary-hover\` → \`primary\` 加深 10%
+- 阴影：缩小至 \`shadow-xs\`
+
+### Focus 态
+- 描边：2px solid \`--ui-color-primary\`
+- 描边偏移：2px
+
+### Disabled 态
+- 透明度：0.5
+- cursor: not-allowed
+- 无 hover 效果
+
+### Loading 态
+- 按钮：禁用点击 + 显示 spinner
+- 页面：显示 Skeleton 占位
+
+---
+
+## 无障碍规范
+
+1. **键盘导航**：所有可交互元素必须支持 Tab 聚焦，Enter/Space 触发
+2. **ARIA 属性**：按钮带 \`aria-label\`，弹窗带 \`role="dialog"\` + \`aria-modal\`
+3. **颜色对比度**：文字与背景对比度 ≥ 4.5:1
+4. **焦点可见**：focus 状态必须有明显的视觉指示
+5. **语义化标签**：使用正确的 HTML 元素（button / nav / main / section）
+
+---
+
+> 本文档由 Vue UI Agent 自动生成。如需修改，请编辑组件源码。
+`;
 }
 
 /**
@@ -167,6 +432,7 @@ export async function generateComponentLibrary({
 
   const writtenFiles = [];
   const hasThemeCSS = componentFiles.some(f => f.fileName === 'theme.css');
+  const hasREADME = componentFiles.some(f => f.fileName === 'README.md');
 
   for (const file of componentFiles) {
     const outputPath = path.join(resolvedOutputDir, file.fileName);
@@ -184,6 +450,13 @@ export async function generateComponentLibrary({
     const themePath = path.join(resolvedOutputDir, 'theme.css');
     fs.writeFileSync(themePath, themeContent, 'utf-8');
     writtenFiles.push('theme.css');
+  }
+
+  if (!hasREADME) {
+    const docsContent = generateDocsFile(componentFiles, framework);
+    const docsPath = path.join(resolvedOutputDir, 'README.md');
+    fs.writeFileSync(docsPath, docsContent, 'utf-8');
+    writtenFiles.push('README.md');
   }
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
