@@ -166,6 +166,8 @@ export async function generateComponentLibrary({
   }
 
   const writtenFiles = [];
+  const hasThemeCSS = componentFiles.some(f => f.fileName === 'theme.css');
+
   for (const file of componentFiles) {
     const outputPath = path.join(resolvedOutputDir, file.fileName);
     fs.writeFileSync(outputPath, file.content, 'utf-8');
@@ -177,10 +179,12 @@ export async function generateComponentLibrary({
   fs.writeFileSync(indexPath, indexContent, 'utf-8');
   writtenFiles.push('index.ts');
 
-  const themeContent = generateThemeCSS(componentFiles);
-  const themePath = path.join(resolvedOutputDir, 'theme.css');
-  fs.writeFileSync(themePath, themeContent, 'utf-8');
-  writtenFiles.push('theme.css');
+  if (!hasThemeCSS) {
+    const themeContent = generateThemeCSS(componentFiles);
+    const themePath = path.join(resolvedOutputDir, 'theme.css');
+    fs.writeFileSync(themePath, themeContent, 'utf-8');
+    writtenFiles.push('theme.css');
+  }
 
   const elapsed = ((Date.now() - startTime) / 1000).toFixed(1);
 

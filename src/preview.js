@@ -6,9 +6,6 @@ import { promisify } from 'node:util';
 
 const execAsync = promisify(exec);
 
-/**
- * 解析 Vue SFC 文件，提取 template 和 style
- */
 function parseVueSFC(source) {
   const templateMatch = source.match(/<template>([\s\S]*?)<\/template>/);
   const styleMatch = source.match(/<style[^>]*>([\s\S]*?)<\/style>/);
@@ -18,13 +15,8 @@ function parseVueSFC(source) {
   };
 }
 
-/**
- * 解析 React TSX 文件，提取 JSX 和 CSS
- */
 function parseReactComponent(source) {
-  // 提取 CSS Module 或 styled-components 样式（简单提取）
   const styleMatch = source.match(/(?:const styles|const \w+Styles)\s*=\s*\{([\s\S]*?)\};/);
-  // 提取 return 语句中的 JSX
   const returnMatch = source.match(/return\s*\(([\s\S]*?)\);?\s*\}\);?/);
   return {
     jsx: returnMatch ? returnMatch[1].trim() : '',
@@ -32,9 +24,6 @@ function parseReactComponent(source) {
   };
 }
 
-/**
- * 获取空闲端口
- */
 function getFreePort(startPort = 3456) {
   return new Promise((resolve) => {
     const server = http.createServer();
@@ -46,9 +35,6 @@ function getFreePort(startPort = 3456) {
   });
 }
 
-/**
- * 生成预览 HTML 页面
- */
 function generatePreviewHTML(components, framework) {
   const isVue = framework === 'vue';
 
@@ -84,7 +70,6 @@ function generatePreviewHTML(components, framework) {
     };`;
     }).join('\n')}
 
-    // 注入 scoped style
     ${components.map((comp) => {
       if (!comp.style) return '';
       return `
@@ -95,7 +80,6 @@ function generatePreviewHTML(components, framework) {
     })();`;
     }).join('\n')}
 
-    // 为每个组件创建独立的 Vue 实例
     ${components.map((comp) => {
       const name = comp.fileName.replace(path.extname(comp.fileName), '');
       return `
@@ -115,8 +99,17 @@ function generatePreviewHTML(components, framework) {
 
     ${components.map((comp) => {
       const name = comp.fileName.replace(path.extname(comp.fileName), '');
-      // React 组件直接渲染为静态 HTML 预览
-      return '';
+      return `
+    function ${name}() {
+      return (${comp.jsx || ''});
+    }`;
+    }).join('\n')}
+
+    ${components.map((comp) => {
+      const name = comp.fileName.replace(path.extname(comp.fileName), '');
+      return `
+    const root${name} = ReactDOM.createRoot(document.getElementById('preview-${name}'));
+    root${name}.render(React.createElement(${name}));`;
     }).join('\n')}
   </script>` : '';
 
@@ -252,13 +245,6 @@ function escapeHtml(text) {
     .replace(/'/g, '&#039;');
 }
 
-/**
- * 创建预览服务
- * @param {string} outputDir - 组件输出目录
- * @param {string} framework - vue | react
- * @param {string[]} fileNames - 生成的文件名列表
- * @returns {Promise<string>} - 预览 URL
- */
 export async function createPreview(outputDir, framework, fileNames) {
   const previewDir = path.join(outputDir, '.preview');
 
@@ -266,23 +252,32 @@ export async function createPreview(outputDir, framework, fileNames) {
     fs.mkdirSync(previewDir, { recursive: true });
   }
 
-  const components = fileNames.map((fileName) => {
-    const filePath = path.join(outputDir, fileName);
-    const source = fs.readFileSync(filePath, 'utf-8');
-    const isVue = framework === 'vue';
+  const themeFilePath = path.join(outputDir, 'theme.css');
+  let themeContent = '';
+  if (fs.existsSync(themeFilePath)) {
+    themeContent = fs.readFileSync(themeFilePath, 'utf-8');
+  }
 
-    if (isVue) {
-      const { template, style } = parseVueSFC(source);
-      return { fileName, source, template, style, previewHTML: template };
-    } else {
-      const { jsx, style } = parseReactComponent(source);
-      return { fileName, source, jsx, style, previewHTML: jsx };
-    }
-  });
+  const components = fileNames
+    .filter(f => f.endsWith('.vue') || f.endsWith('.tsx'))
+    .map((fileName) => {
+      const filePath = path.join(outputDir, fileName);
+      const source = fs.readFileSync(filePath, 'utf-8');
+      const isVue = framework === 'vue';
+
+      if (isVue) {
+        const { template, style } = parseVueSFC(source);
+        return { fileName, source, template, style, previewHTML: template };
+      } else {
+        const { jsx, style } = parseReactComponent(source);
+        return { fileName, source, jsx, style, previewHTML: jsx };
+      }
+    });
 
   const html = generatePreviewHTML(components, framework);
+  const htmlWithTheme = html.replace('</style>', `\n    ${themeContent}\n  </style>`);
   const htmlPath = path.join(previewDir, 'index.html');
-  fs.writeFileSync(htmlPath, html, 'utf-8');
+  fs.writeFileSync(htmlPath, htmlWithTheme, 'utf-8');
 
   const port = await getFreePort();
 
@@ -313,7 +308,6 @@ export async function createPreview(outputDir, framework, fileNames) {
     server.listen(port, '127.0.0.1', async () => {
       const url = `http://127.0.0.1:${port}`;
 
-      // 自动打开浏览器
       try {
         if (process.platform === 'darwin') {
           await execAsync(`open "${url}"`);
@@ -323,7 +317,7 @@ export async function createPreview(outputDir, framework, fileNames) {
           await execAsync(`xdg-open "${url}"`);
         }
       } catch {
-        // 静默忽略打开失败
+        //
       }
 
       resolve(url);

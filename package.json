@@ -8,7 +8,9 @@
   },
   "scripts": {
     "start": "node src/cli.js",
-    "preview": "node src/preview.js"
+    "preview": "node src/preview.js",
+    "lint": "node src/lint.js",
+    "check": "npm run lint && node -e \"import('./src/core.js');import('./src/cli.js');import('./src/preview.js');console.log('✅ 所有模块检查通过')\""
   },
   "keywords": [
     "vue",
