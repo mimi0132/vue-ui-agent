@@ -13,13 +13,28 @@
 
 ## 安装
 
-### 一键安装（推荐）
+### 一键安装（推荐 · 无需选择）
 
 ```bash
-npx skills add mimi0132/vue-ui-agent
+# 自动检测所有已安装的 Agent，无需手动选择，一行搞定
+npx skills add mimi0132/vue-ui-agent --all
 ```
 
-Vercel `skills` CLI 会自动检测你的 Agent 环境，把技能文件安装到对应目录。
+等价于 `--skill '*' --agent '*' -y`，**跳过所有交互提示**，自动安装到所有检测到的 Agent。
+
+> `--all` 是 Vercel skills CLI 的内置参数，详见 [CLI 文档](https://github.com/vercel-labs/skills#options)。
+
+### 自定义安装
+
+如果只想装到特定 Agent，可以分别指定：
+
+```bash
+# 只装到 Claude Code 和 Cursor，跳过确认
+npx skills add mimi0132/vue-ui-agent -a claude-code -a cursor -y
+
+# 全局安装（所有项目可用）
+npx skills add mimi0132/vue-ui-agent -g -y
+```
 
 ### 直接使用（无需安装）
 

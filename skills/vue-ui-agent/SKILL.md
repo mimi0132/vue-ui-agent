@@ -7,6 +7,14 @@ description: Generate a complete UI component library from screenshots. Use when
 
 从 UI 截图生成一整套高复用的前端组件库。
 
+## 安装
+
+```bash
+npx skills add mimi0132/vue-ui-agent --all
+```
+
+`--all` 会自动检测本机所有 AI 编程工具，把技能装到所有检测到的 Agent，无需手动选择。
+
 ## 核心能力
 
 - **图片分析**：识别截图中的主色、圆角、阴影、毛玻璃质感、间距等视觉特征
