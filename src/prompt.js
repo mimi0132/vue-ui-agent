@@ -238,6 +238,76 @@ export default Button;
 }
 <!-- FILE_END: theme.css -->
 
+<!-- FILE_START: colors.css -->
+/* 完整的颜色库，**从截图提取每一个颜色变体**（不仅是主色），按色系分组 */
+:root {
+  /* === 中性色（从截图提取实际出现的灰色阶梯） === */
+  --ui-color-gray-50: #F9FAFB;
+  --ui-color-gray-100: #F3F4F6;
+  --ui-color-gray-200: #E5E7EB;
+  --ui-color-gray-300: #D1D5DB;
+  --ui-color-gray-400: #9CA3AF;
+  --ui-color-gray-500: #6B7280;
+  --ui-color-gray-600: #4B5563;
+  --ui-color-gray-700: #374151;
+  --ui-color-gray-800: #1F2937;
+  --ui-color-gray-900: #111827;
+
+  /* === 主色（从截图识别的主色，自动生成 50~900 全阶梯） === */
+  --ui-color-primary-50: #EEF2FF;
+  --ui-color-primary-100: #E0E7FF;
+  --ui-color-primary-200: #C7D2FE;
+  --ui-color-primary-300: #A5B4FC;
+  --ui-color-primary-400: #818CF8;
+  --ui-color-primary-500: #主色 base;
+  --ui-color-primary-600: #主色加深 10%;
+  --ui-color-primary-700: #主色加深 20%;
+  --ui-color-primary-800: #主色加深 30%;
+  --ui-color-primary-900: #主色加深 40%;
+
+  /* === 语义色（根据截图实际出现的颜色） === */
+  /* success */
+  --ui-color-success-50: #ECFDF5;
+  --ui-color-success-500: #10B981;
+  --ui-color-success-600: #059669;
+  --ui-color-success-700: #047857;
+  /* warning */
+  --ui-color-warning-50: #FFFBEB;
+  --ui-color-warning-500: #F59E0B;
+  --ui-color-warning-600: #D97706;
+  --ui-color-warning-700: #B45309;
+  /* danger */
+  --ui-color-danger-50: #FEF2F2;
+  --ui-color-danger-500: #EF4444;
+  --ui-color-danger-600: #DC2626;
+  --ui-color-danger-700: #B91C1C;
+  /* info */
+  --ui-color-info-50: #EFF6FF;
+  --ui-color-info-500: #3B82F6;
+  --ui-color-info-600: #2563EB;
+  --ui-color-info-700: #1D4ED8;
+
+  /* === 背景与表面 === */
+  --ui-color-bg-primary: #页面主背景;
+  --ui-color-bg-secondary: #次级背景;
+  --ui-color-surface: #卡片表面色;
+  --ui-color-surface-hover: #悬停态;
+  --ui-color-overlay: rgba(0,0,0,0.5);
+
+  /* === 边框与分割线 === */
+  --ui-color-border: #默认边框;
+  --ui-color-border-light: #浅边框;
+  --ui-color-divider: #分割线;
+
+  /* === 文字色 === */
+  --ui-color-text-primary: #主要文字;
+  --ui-color-text-secondary: #次要文字;
+  --ui-color-text-tertiary: #辅助文字;
+  --ui-color-text-disabled: #禁用文字;
+  --ui-color-text-inverse: #反色文字;
+}
+<!-- FILE_END: colors.css -->
+
 <!-- FILE_START: Button.vue -->
 <完整的 Button 组件代码>
 <!-- FILE_END: Button.vue -->
@@ -261,13 +331,14 @@ export default Button;
 
 **格式规则**：
 1. **第一个文件必须是 theme.css**，包含所有从截图提取的 Design Token（颜色、圆角、阴影、间距、字体）
-2. **最后一个文件必须是 README.md**，包含完整的组件库使用文档
-3. 每个组件用 \`<!-- FILE_START: 文件名 -->\` 和 \`<!-- FILE_END: 文件名 -->\` 包裹
-4. 文件名使用 PascalCase：\`Button.vue\`, \`Input.vue\`, \`Card.vue\` 等（React 用 \`.tsx\` 后缀）
-4. 组件之间不要有其他文字解释
-5. 至少生成 **6 个以上** 组件（Button + Input + Card + Badge + Avatar + Divider 为基础必选）
-6. 根据截图内容**智能延伸**相关组件（看到表单就加 Select/Switch/Checkbox，看到数据列表就加 Table/Pagination）
-7. 组件代码中**必须引用 theme.css 中定义的 CSS 变量**，不要硬编码颜色值
+2. **第二个文件必须是 colors.css**，包含完整的颜色库（中性色 50-900 + 主色 50-900 + 语义色 50-700 + 背景/边框/文字色）
+3. **最后一个文件必须是 README.md**，包含完整的组件库使用文档
+4. 每个组件用 \`<!-- FILE_START: 文件名 -->\` 和 \`<!-- FILE_END: 文件名 -->\` 包裹
+5. 文件名使用 PascalCase：\`Button.vue\`, \`Input.vue\`, \`Card.vue\` 等（React 用 \`.tsx\` 后缀）
+6. 组件之间不要有其他文字解释
+7. 至少生成 **6 个以上** 组件（Button + Input + Card + Badge + Avatar + Divider 为基础必选）
+8. 根据截图内容**智能延伸**相关组件（看到表单就加 Select/Switch/Checkbox，看到数据列表就加 Table/Pagination）
+9. 组件代码中**必须引用 theme.css / colors.css 中定义的 CSS 变量**，不要硬编码颜色值
 
 **每个组件文件格式（重要）**：
 每个组件用两个标记包裹：

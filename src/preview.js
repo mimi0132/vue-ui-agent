@@ -61,11 +61,121 @@ function extractComponentStyle(source) {
 }
 
 /**
- * 生成预览 HTML：每个组件独立一张大卡片 + 所有变体 demo
+ * 从 colors.css 中解析所有颜色变量，按色系分组
  */
-function generatePreviewHTML(componentInfos, framework, themeCSS) {
+function parseColorPalette(colorsCSS) {
+  if (!colorsCSS) return [];
+
+  // 匹配所有 --ui-color-*: #...; 或 rgb()/rgba()
+  const varPattern = /--ui-color-([\w-]+):\s*([^;]+);/g;
+  const colors = [];
+
+  let match;
+  while ((match = varPattern.exec(colorsCSS)) !== null) {
+    const name = match[1];           // 例如 primary-500
+    const value = match[2].trim();
+    colors.push({ name, value });
+  }
+
+  // 按前缀分组（gray / primary / success / warning / danger / info / bg / surface / border / divider / text / overlay）
+  const groups = new Map();
+  const groupOrder = ['gray', 'primary', 'secondary', 'success', 'warning', 'danger', 'info', 'bg', 'surface', 'overlay', 'border', 'divider', 'text'];
+  const groupLabels = {
+    gray: '中性色 Gray',
+    primary: '主色 Primary',
+    secondary: '辅助色 Secondary',
+    success: '成功 Success',
+    warning: '警告 Warning',
+    danger: '危险 Danger',
+    info: '信息 Info',
+    bg: '背景 Background',
+    surface: '表面 Surface',
+    overlay: '遮罩 Overlay',
+    border: '边框 Border',
+    divider: '分割线 Divider',
+    text: '文字 Text',
+  };
+
+  for (const c of colors) {
+    const prefix = c.name.split('-')[0];
+    if (!groups.has(prefix)) groups.set(prefix, []);
+    groups.get(prefix).push(c);
+  }
+
+  // 按预定义顺序返回分组
+  return groupOrder
+    .filter(prefix => groups.has(prefix))
+    .map(prefix => ({
+      prefix,
+      label: groupLabels[prefix] || prefix,
+      colors: groups.get(prefix).sort((a, b) => a.name.localeCompare(b.name, undefined, { numeric: true })),
+    }));
+}
+
+/**
+ * 计算文字颜色（黑或白）以保证色卡上的对比度
+ */
+function isLightColor(hex) {
+  // 处理 rgba
+  if (hex.startsWith('rgba') || hex.startsWith('rgb')) {
+    const m = hex.match(/[\d.]+/g);
+    if (!m) return true;
+    const [r, g, b] = m.map(Number);
+    return (r * 299 + g * 587 + b * 114) / 1000 > 160;
+  }
+  // 处理 hex
+  const h = hex.replace('#', '').trim();
+  if (h.length !== 3 && h.length !== 6) return true;
+  const v = h.length === 3
+    ? h.split('').map(c => c + c).join('')
+    : h;
+  const r = parseInt(v.slice(0, 2), 16);
+  const g = parseInt(v.slice(2, 4), 16);
+  const b = parseInt(v.slice(4, 6), 16);
+  return (r * 299 + g * 587 + b * 114) / 1000 > 160;
+}
+
+/**
+ * 生成颜色库的 HTML
+ */
+function generateColorPaletteHTML(colorGroups) {
+  if (!colorGroups || colorGroups.length === 0) {
+    return '';
+  }
+
+  const groupsHTML = colorGroups.map(group => {
+    const swatches = group.colors.map(c => {
+      const textColor = isLightColor(c.value) ? '#111827' : '#ffffff';
+      return `
+        <div class="color-swatch">
+          <div class="color-block" style="background: ${c.value}; color: ${textColor};">
+            <span class="color-name">--ui-color-${c.name}</span>
+          </div>
+          <div class="color-meta">
+            <code class="color-value">${c.value}</code>
+          </div>
+        </div>`;
+    }).join('');
+
+    return `
+      <div class="color-group">
+        <h3 class="color-group-title">${group.label}</h3>
+        <div class="color-grid">${swatches}</div>
+      </div>`;
+  }).join('');
+
+  return groupsHTML;
+}
+
+/**
+ * 生成预览 HTML：颜色库 + 每个组件独立一张大卡片 + 所有变体 demo
+ */
+function generatePreviewHTML(componentInfos, framework, themeCSS, colorsCSS) {
   const isVue = framework === 'vue';
   const frameworkLabel = isVue ? 'Vue 3' : 'React';
+
+  const colorGroups = parseColorPalette(colorsCSS);
+  const colorPaletteHTML = generateColorPaletteHTML(colorGroups);
 
   const componentCards = componentInfos.map((info) => {
     const { name, source, style, demoHTML, isMissing } = info;
@@ -99,6 +209,9 @@ function generatePreviewHTML(componentInfos, framework, themeCSS) {
   <style>
     /* ============== theme.css（AI 生成的设计 Token） ============== */
     ${themeCSS}
+
+    /* ============== colors.css（完整颜色库） ============== */
+    ${colorsCSS}
 
     /* ============== 预览页面布局 ============== */
     :root {
@@ -154,6 +267,87 @@ function generatePreviewHTML(componentInfos, framework, themeCSS) {
       gap: 1.5rem;
     }
 
+    /* ============== 颜色库 ============== */
+    .color-library {
+      max-width: 1200px;
+      margin: 0 auto 2rem;
+      background: var(--preview-card-bg);
+      border: 1px solid var(--preview-border);
+      border-radius: 0.75rem;
+      overflow: hidden;
+      box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+    }
+    .color-library-header {
+      padding: 1.25rem 1.5rem;
+      border-bottom: 1px solid var(--preview-border);
+      background: #fafbfc;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+    }
+    .color-library-title {
+      font-size: 1.25rem;
+      font-weight: 700;
+      color: var(--preview-text);
+    }
+    .color-library-subtitle {
+      font-size: 0.75rem;
+      color: var(--preview-text-muted);
+      margin-top: 0.25rem;
+    }
+    .color-library-body {
+      padding: 1.5rem;
+    }
+    .color-group {
+      margin-bottom: 1.75rem;
+    }
+    .color-group:last-child {
+      margin-bottom: 0;
+    }
+    .color-group-title {
+      font-size: 0.875rem;
+      font-weight: 600;
+      color: var(--preview-text);
+      margin-bottom: 0.75rem;
+      padding-bottom: 0.5rem;
+      border-bottom: 1px dashed var(--preview-border);
+    }
+    .color-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+      gap: 0.75rem;
+    }
+    .color-swatch {
+      border-radius: 0.5rem;
+      overflow: hidden;
+      border: 1px solid var(--preview-border);
+      background: white;
+    }
+    .color-block {
+      height: 64px;
+      padding: 0.5rem;
+      display: flex;
+      align-items: flex-end;
+      font-size: 0.65rem;
+      font-weight: 500;
+      font-family: 'SF Mono', 'Menlo', monospace;
+      word-break: break-all;
+    }
+    .color-name {
+      opacity: 0.85;
+    }
+    .color-meta {
+      padding: 0.4rem 0.6rem;
+      background: white;
+    }
+    .color-value {
+      font-size: 0.7rem;
+      color: var(--preview-text);
+      font-family: 'SF Mono', 'Menlo', monospace;
+      word-break: break-all;
+    }
+
+    /* ============== 组件卡片 ============== */
     .component-card {
       background: var(--preview-card-bg);
       border: 1px solid var(--preview-border);
@@ -259,6 +453,19 @@ function generatePreviewHTML(componentInfos, framework, themeCSS) {
     <p>共 ${componentInfos.length} 个组件 · ${frameworkLabel}<span class="framework-badge badge-${isVue ? 'vue' : 'react'}">${frameworkLabel}</span></p>
   </div>
 
+  ${colorPaletteHTML ? `
+  <section class="color-library">
+    <header class="color-library-header">
+      <div>
+        <h2 class="color-library-title">颜色库</h2>
+        <p class="color-library-subtitle">共 ${colorGroups.reduce((sum, g) => sum + g.colors.length, 0)} 个颜色变量 · 来源 colors.css</p>
+      </div>
+    </header>
+    <div class="color-library-body">
+      ${colorPaletteHTML}
+    </div>
+  </section>` : ''}
+
   <div class="components-list">
     ${componentCards}
   </div>
@@ -283,6 +490,13 @@ export async function createPreview(outputDir, framework, fileNames, rawText) {
     themeCSS = fs.readFileSync(themeFilePath, 'utf-8');
   }
 
+  // 读取 colors.css
+  const colorsFilePath = path.join(outputDir, 'colors.css');
+  let colorsCSS = '';
+  if (fs.existsSync(colorsFilePath)) {
+    colorsCSS = fs.readFileSync(colorsFilePath, 'utf-8');
+  }
+
   // 解析 AI 输出，提取 demo
   const { demos } = parseFiles(rawText || '');
 
@@ -305,7 +519,7 @@ export async function createPreview(outputDir, framework, fileNames, rawText) {
       };
     });
 
-  const html = generatePreviewHTML(componentInfos, framework, themeCSS);
+  const html = generatePreviewHTML(componentInfos, framework, themeCSS, colorsCSS);
   const htmlPath = path.join(previewDir, 'index.html');
   fs.writeFileSync(htmlPath, html, 'utf-8');
 
