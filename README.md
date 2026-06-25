@@ -1,37 +1,29 @@
 # Vue UI Agent
 
-从 UI 截图一键生成完整前端组件库。支持 Vue 3 / React 双框架，自动适配 Cursor、Claude Code、Codex 等主流 AI 编程工具。
+从 UI 截图一键生成完整前端组件库。支持 Vue 3 / React 双框架，兼容所有 AI 编程工具（Cursor、Claude Code、Codex、GitHub Copilot 等）。
 
 ## 特性
 
 - **整张截图 → 整套组件库**：自动推导 Design Token，生成 Button、Input、Card、Badge、Avatar、Tooltip 等高复用组件
 - **双框架输出**：Vue 3 (`<script setup lang="ts">`) / React (Function Component + TypeScript)
 - **多 AI 自动适配**：只需配置一个环境变量，自动使用 Gemini / GPT / Claude / DeepSeek / 通义千问
-- **一键安装**：一条命令，自动适配所有 Agent 环境
+- **通用兼容**：不绑定特定 Agent，任何具备文件读写能力的 AI 工具都能用
 - **零业务耦合**：纯视觉还原，不引入任何第三方 UI 库
 - **浏览器预览**：生成后自动打开预览页面
 
-## 安装（推荐方式）
+## 安装
 
-### 一键安装（支持 Cursor / Claude Code / Codex）
+### 一键安装（推荐）
 
 ```bash
 npx skills add mimi0132/vue-ui-agent
 ```
 
-Vercel `skills` CLI 会自动检测你的 Agent 环境（Cursor / Claude Code / Codex），把技能文件安装到对应目录。
+Vercel `skills` CLI 会自动检测你的 Agent 环境，把技能文件安装到对应目录。
 
-支持的 Agent：
+### 直接使用（无需安装）
 
-| Agent | 安装位置 |
-|-------|---------|
-| Claude Code | `~/.claude/skills/` |
-| Cursor | `~/.agents/skills/` |
-| Codex | `~/.agents/skills/` |
-
-### 也支持直接粘贴 URL
-
-不想安装？在聊天框中粘贴这个即可：
+在任意 AI 聊天框中粘贴以下内容即可：
 
 ```
 Read https://github.com/mimi0132/vue-ui-agent/tree/main/skills/vue-ui-agent/SKILL.md
@@ -43,25 +35,32 @@ Agent 会自动读取 SKILL.md 并按照规范工作。
 
 ## 使用方式
 
-安装后，直接在 Agent 聊天框中说：
+### 基础用法
+
+在任意 AI 编程工具中：
+
+1. 拖入一张 UI 截图
+2. 说："帮我根据这张截图生成 Vue 3 组件库"
+
+Agent 会自动完成：分析截图 → 提取设计 Token → 生成组件 → 写入文件 → 打开预览。
+
+### 完整命令
 
 ```
-根据这张截图帮我生成 Vue 3 组件库
+根据这张截图生成 Vue 3 组件库，输出到 src/components/ui/
 ```
 
 或
 
 ```
-用 React 帮我实现这套 UI 组件
+用 React 实现这套 UI，包含 Button、Input、Card、Badge 组件
 ```
-
-Agent 会自动完成：分析截图 → 提取设计 Token → 生成组件 → 写入文件 → 打开预览。
 
 ---
 
 ## 环境变量配置
 
-设置以下环境变量之一（**三选一**，不需要全配）：
+设置以下环境变量之一（**三选一**）：
 
 ```bash
 # Google Gemini（推荐，免费额度高）
@@ -77,6 +76,28 @@ export ANTHROPIC_API_KEY="sk-ant-..."
 ```
 
 **优先级**：`OPENAI_API_KEY` > `ANTHROPIC_API_KEY` > `GEMINI_API_KEY`
+
+---
+
+## 支持的 Agent
+
+本技能兼容所有具备以下能力的 AI 工具：
+
+| 能力 | 用途 |
+|------|------|
+| 文件读取 | 分析项目结构、代码风格 |
+| 文件写入 | 创建组件文件 |
+| 命令执行 | 调用 AI API、启动预览服务 |
+| 图片分析 | 读取截图内容 |
+
+**已测试兼容**：
+- Cursor
+- Claude Code
+- Codex
+- GitHub Copilot
+- Trae AI
+- Cline
+- Roo Code
 
 ---
 
@@ -125,8 +146,7 @@ vue-ui-agent/
 │       ├── SKILL.md                    # 入口文件（Agent 读取这个）
 │       └── references/
 │           ├── system-prompt.md        # 核心设计规范 + 代码模板
-│           ├── claude-code.md          # Claude Code 工具映射
-│           └── cursor.md               # Cursor 工具映射
+│           └── generic.md              # 通用工具能力描述
 ├── src/
 │   ├── cli.js                          # 命令行入口（独立使用）
 │   ├── core.js                         # AI 调用核心逻辑
@@ -180,6 +200,14 @@ echo $OPENAI_API_KEY   # 确认环境变量已设置
 
 ```bash
 npx skills update mimi0132/vue-ui-agent
+```
+
+### 5. 我的 Agent 不支持图片分析怎么办？
+
+将截图保存到本地，然后用命令行模式：
+
+```bash
+vue-ui-agent ./screenshot.png --framework vue
 ```
 
 ---
